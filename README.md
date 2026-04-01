@@ -27,7 +27,7 @@ SENTINEL is a comprehensive surveillance management system that combines cutting
 
 ---
 
-## ⚡ Quickstart
+## Quickstart
 ```bash
 # 1. Clone the repo
 git clone https://github.com/SentinEliX-cmd/Sentinel.git
