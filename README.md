@@ -629,11 +629,7 @@ Before deploying to production:
 
 ## License & Attribution
 
-**Author**: Eli Martin Kipkorir  
-**Student ID**: DCF-01-0171/2025  
-**Institution**: Zetech University  
-**Module**: Computer Systems Project (Semester 3)
-
+**Author**: Eli  Kipkorir  
 **Academic Use Only**: This project is provided for educational purposes. Modify and redistribute as needed for coursework.
 
 ---
