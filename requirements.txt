@@ -1,0 +1,6 @@
+flask
+flask-limiter
+werkzeug
+ultralytics
+opencv-python
+.venv\Scripts\Activate.ps1

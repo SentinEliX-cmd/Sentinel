@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SENTINEL | Alert History</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/alert-history.css">
+</head>
+<body>
+
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="nav-left">
+            <div class="logo">
+                <div class="logo-icon"><i class="fas fa-shield-alt"></i></div>
+                <span class="logo-text">SENTINEL</span>
+            </div>
+            <div class="nav-tabs">
+                <button class="nav-tab" onclick="window.location.href='/dashboard'">
+                    <i class="fas fa-home"></i> Home
+                </button>
+                <button class="nav-tab active">
+                    <i class="fas fa-history"></i> Alerts
+                </button>
+                <button class="nav-tab" onclick="window.location.href='/alert-configuration'">
+                    <i class="fas fa-cog"></i> Settings
+                </button>
+            </div>
+        </div>
+        <div class="nav-right">
+            <div class="nav-icon" title="Export alerts" onclick="exportAlerts()" style="cursor:pointer">
+                <i class="fas fa-download"></i>
+            </div>
+            <div class="nav-icon" onclick="window.location.href='/dashboard'" title="Dashboard" style="cursor:pointer">
+                <i class="fas fa-th-large"></i>
+            </div>
+            <div class="user-avatar" id="navUserAvatar" title="Logged in user">--</div>
+        </div>
+    </nav>
+
+    <div class="main-content">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Navigation</div>
+                <a href="/dashboard" class="sidebar-link">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+                <a href="/alert-history" class="sidebar-link active">
+                    <i class="fas fa-history"></i> Alert History
+                </a>
+                <a href="/alert-configuration" class="sidebar-link">
+                    <i class="fas fa-cog"></i> Configuration
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Filter by Status</div>
+                <a href="#" class="sidebar-link filter-link active" data-status="">
+                    <i class="fas fa-list"></i> All Alerts
+                    <span class="sidebar-count" id="count-all">0</span>
+                </a>
+                <a href="#" class="sidebar-link filter-link" data-status="unacknowledged">
+                    <i class="fas fa-exclamation-circle" style="color:#ef4444"></i> Unacknowledged
+                    <span class="sidebar-count" id="count-unack">0</span>
+                </a>
+                <a href="#" class="sidebar-link filter-link" data-status="acknowledged">
+                    <i class="fas fa-check-circle" style="color:#10b981"></i> Acknowledged
+                    <span class="sidebar-count" id="count-ack">0</span>
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Filter by Camera</div>
+                <div id="camera-filter-links">
+                    <a href="#" class="sidebar-link cam-filter active" data-camera="">
+                        <i class="fas fa-video"></i> All Cameras
+                    </a>
+                    <!-- Populated by JS from /api/camera-feeds -->
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Area -->
+        <main class="content-area">
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Alert History</h1>
+                    <p class="page-subtitle">Complete forensic log of all system detections</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="exportAlerts()">
+                        <i class="fas fa-file-csv"></i> Export CSV
+                    </button>
+                    <button class="btn btn-primary" onclick="refreshHistory()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label class="filter-label">Object Type</label>
+                    <select class="filter-select" id="filter-type" onchange="applyFilters()">
+                        <option value="">All Types</option>
+                        <option value="person">Person</option>
+                        <option value="car">Vehicle</option>
+                        <option value="truck">Truck</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Severity</label>
+                    <select class="filter-select" id="filter-severity" onchange="applyFilters()">
+                        <option value="">All Severities</option>
+                        <option value="critical">Critical</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Camera</label>
+                    <select class="filter-select" id="filter-camera" onchange="applyFilters()">
+                        <option value="">All Cameras</option>
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Status</label>
+                    <select class="filter-select" id="filter-status" onchange="applyFilters()">
+                        <option value="">All</option>
+                        <option value="unacknowledged">Unacknowledged</option>
+                        <option value="acknowledged">Acknowledged</option>
+                    </select>
+                </div>
+                <button class="btn btn-ghost" onclick="clearFilters()">
+                    <i class="fas fa-times"></i> Clear
+                </button>
+            </div>
+
+            <!-- Results Summary -->
+            <div class="results-summary">
+                <span id="results-count">Loading...</span>
+            </div>
+
+            <!-- Alert Table -->
+            <div class="table-container">
+                <table class="alert-table">
+                    <thead>
+                        <tr>
+                            <th>Time & Date</th>
+                            <th>Object Detected</th>
+                            <th>Severity</th>
+                            <th>Camera</th>
+                            <th>Rule Triggered</th>
+                            <th>Confidence</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="alert-history-table">
+                        <tr>
+                            <td colspan="8" class="empty-state">
+                                <i class="fas fa-spinner fa-spin"></i> Loading alerts...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="/static/js/alert-history.js"></script>
+</body>
+</html>

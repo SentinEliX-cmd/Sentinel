@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alert Configuration | SENTINEL</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/alert-config.css">
+</head>
+<body>
+
+<div class="alert-config-container">
+
+    <!-- Header -->
+    <header class="config-header">
+        <div class="header-left">
+            <a href="/dashboard" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <div class="logo-section">
+                <div class="eye-logo small">
+                    <div class="eye-outer"><div class="eye-inner"></div></div>
+                </div>
+                <div class="header-title">
+                    <h1><i class="fas fa-cog"></i> ALERT CONFIGURATION</h1>
+                    <p class="subtitle">Configure detection rules and AI parameters</p>
+                </div>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="user-info">
+                <span class="username" id="headerUsername">ADMIN</span>
+                <button class="logout-btn" id="logoutBtn" onclick="logout()" title="Logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="config-main">
+
+        <!-- LEFT PANEL: Rule Creation Form -->
+        <section class="rule-creation-panel">
+            <div class="panel-header">
+                <h2><i class="fas fa-plus-circle"></i> CREATE NEW RULE</h2>
+                <button class="btn-save" id="saveRuleBtn" onclick="saveRule()">
+                    <i class="fas fa-save"></i> Save Rule
+                </button>
+            </div>
+
+            <div class="creation-form">
+
+                <!-- Rule Info -->
+                <div class="form-section">
+                    <h3><i class="fas fa-info-circle"></i> Rule Information</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="ruleName"><i class="fas fa-tag"></i> Rule Name *</label>
+                            <input type="text" id="ruleName" class="form-input"
+                                   placeholder="e.g., After-Hours Intruder Detection">
+                        </div>
+                        <div class="form-group">
+                            <label for="rulePriority"><i class="fas fa-exclamation-triangle"></i> Priority *</label>
+                            <select id="rulePriority" class="form-select">
+                                <option value="critical">Critical (Immediate Response)</option>
+                                <option value="high">High (Red Alert)</option>
+                                <option value="medium" selected>Medium (Yellow Alert)</option>
+                                <option value="low">Low (Info Only)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="ruleDescription"><i class="fas fa-align-left"></i> Description</label>
+                        <textarea id="ruleDescription" class="form-textarea" rows="3"
+                                  placeholder="Describe what this rule detects and when it triggers..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Object Detection -->
+                <div class="form-section">
+                    <h3><i class="fas fa-crosshairs"></i> Object Detection Settings</h3>
+
+                    <div class="object-types">
+                        <div class="section-label"><i class="fas fa-bullseye"></i> Detect Objects:</div>
+                        <div class="object-checkboxes">
+                            <label class="checkbox-label person-check">
+                                <input type="checkbox" id="detectPerson" checked>
+                                <span class="checkmark"></span>
+                                <i class="fas fa-user"></i> Person
+                            </label>
+                            <label class="checkbox-label vehicle-check">
+                                <input type="checkbox" id="detectVehicle">
+                                <span class="checkmark"></span>
+                                <i class="fas fa-car"></i> Vehicle
+                            </label>
+                            <label class="checkbox-label bike-check">
+                                <input type="checkbox" id="detectBike">
+                                <span class="checkmark"></span>
+                                <i class="fas fa-bicycle"></i> Bicycle
+                            </label>
+                            <label class="checkbox-label bag-check">
+                                <input type="checkbox" id="detectBag">
+                                <span class="checkmark"></span>
+                                <i class="fas fa-suitcase"></i> Bag/Luggage
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="confidenceThreshold">
+                                <i class="fas fa-chart-line"></i> Confidence Threshold
+                            </label>
+                            <div class="slider-container">
+                                <input type="range" id="confidenceThreshold" min="50" max="99" value="75" class="slider"
+                                       oninput="document.getElementById('confidenceValue').textContent = this.value + '%'">
+                                <div class="slider-value">
+                                    <span id="confidenceValue">75%</span>
+                                    <span class="slider-hint">(Higher = fewer false alarms)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="minObjectSize"><i class="fas fa-expand"></i> Minimum Object Size</label>
+                            <select id="minObjectSize" class="form-select">
+                                <option value="any">Any Size</option>
+                                <option value="small">Small (≥10% of frame)</option>
+                                <option value="medium" selected>Medium (≥25% of frame)</option>
+                                <option value="large">Large (≥50% of frame)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Temporal Settings -->
+                <div class="form-section">
+                    <h3><i class="fas fa-clock"></i> Temporal Settings</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label><i class="fas fa-calendar-alt"></i> Active Time Range</label>
+                            <div class="time-range">
+                                <div class="time-input">
+                                    <input type="time" id="startTime" value="18:00" class="form-input">
+                                    <span class="time-label">From</span>
+                                </div>
+                                <div class="time-input">
+                                    <input type="time" id="endTime" value="06:00" class="form-input">
+                                    <span class="time-label">To</span>
+                                </div>
+                            </div>
+                            <div class="time-hint">
+                                <i class="fas fa-info-circle"></i> Rule active between these times only
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-calendar-day"></i> Active Days</label>
+                            <div class="days-selector">
+                                <label class="day-check"><input type="checkbox" value="mon" checked><span>Mon</span></label>
+                                <label class="day-check"><input type="checkbox" value="tue" checked><span>Tue</span></label>
+                                <label class="day-check"><input type="checkbox" value="wed" checked><span>Wed</span></label>
+                                <label class="day-check"><input type="checkbox" value="thu" checked><span>Thu</span></label>
+                                <label class="day-check"><input type="checkbox" value="fri" checked><span>Fri</span></label>
+                                <label class="day-check"><input type="checkbox" value="sat"><span>Sat</span></label>
+                                <label class="day-check"><input type="checkbox" value="sun"><span>Sun</span></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Spatial Settings -->
+                <div class="form-section">
+                    <h3><i class="fas fa-map-marker-alt"></i> Spatial Settings</h3>
+                    <div class="form-group">
+                        <label><i class="fas fa-video"></i> Apply to Cameras</label>
+                        <div class="camera-selection" id="cameraCheckboxes">
+                            <!-- Populated from /api/camera-feeds -->
+                            <div style="color:#94a3b8;font-size:13px;padding:8px 0">
+                                <i class="fas fa-spinner fa-spin"></i> Loading cameras...
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-draw-polygon"></i> Detection Zone</label>
+                        <div class="zone-options">
+                            <label class="zone-option">
+                                <input type="radio" name="zoneType" value="full" checked>
+                                <span class="radio-check"></span> Full Frame
+                            </label>
+                            <label class="zone-option">
+                                <input type="radio" name="zoneType" value="restricted">
+                                <span class="radio-check"></span> Restricted Zone
+                            </label>
+                            <label class="zone-option">
+                                <input type="radio" name="zoneType" value="custom">
+                                <span class="radio-check"></span> Custom Area
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loitering / Behaviour -->
+                <div class="form-section">
+                    <h3><i class="fas fa-stopwatch"></i> Behavioural Thresholds</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="loiterDuration">
+                                <i class="fas fa-hourglass-half"></i> Loitering Threshold (seconds)
+                            </label>
+                            <div class="slider-container">
+                                <input type="range" id="loiterDuration" min="30" max="600" value="120" class="slider"
+                                       oninput="document.getElementById('loiterValue').textContent = this.value + 's'">
+                                <div class="slider-value">
+                                    <span id="loiterValue">120s</span>
+                                    <span class="slider-hint">(Alert if object stays longer than this)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="ruleActive"><i class="fas fa-toggle-on"></i> Rule Status</label>
+                            <div class="toggle-row">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="ruleActive" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                                <span class="toggle-label">Active — rule will fire on matches</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Save Actions -->
+                <div class="form-actions">
+                    <button class="btn-reset" onclick="resetForm()">
+                        <i class="fas fa-undo"></i> Reset Form
+                    </button>
+                    <button class="btn-save-lg" onclick="saveRule()">
+                        <i class="fas fa-save"></i> Save Rule
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- RIGHT PANEL: Existing Rules -->
+        <section class="rules-panel">
+            <div class="panel-header">
+                <h2><i class="fas fa-list"></i> ACTIVE RULES</h2>
+                <div class="rules-summary">
+                    <span id="rules-count" class="rule-count-badge">0 rules</span>
+                </div>
+            </div>
+
+            <div class="rules-search">
+                <input type="text" id="rulesSearch" class="form-input"
+                       placeholder="Search rules..."
+                       oninput="filterRulesList(this.value)">
+                <i class="fas fa-search search-icon"></i>
+            </div>
+
+            <div id="rules-list" class="rules-list">
+                <div class="rules-empty">
+                    <i class="fas fa-spinner fa-spin"></i> Loading rules...
+                </div>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<!-- Confirm Delete Modal -->
+<div id="deleteModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:#1e293b;border:1px solid #334155;border-radius:12px;padding:28px;max-width:400px;width:90%">
+        <h3 style="margin-bottom:12px;color:#f8fafc"><i class="fas fa-exclamation-triangle" style="color:#ef4444"></i> Delete Rule?</h3>
+        <p style="color:#94a3b8;margin-bottom:20px">This cannot be undone. The rule will be permanently removed.</p>
+        <div style="display:flex;gap:10px;justify-content:flex-end">
+            <button onclick="closeDeleteModal()" style="padding:8px 18px;border-radius:6px;background:#334155;color:#f8fafc;border:none;cursor:pointer">Cancel</button>
+            <button id="confirmDeleteBtn" style="padding:8px 18px;border-radius:6px;background:#ef4444;color:#fff;border:none;cursor:pointer">Delete</button>
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/alert-config.js"></script>
+</body>
+</html>
